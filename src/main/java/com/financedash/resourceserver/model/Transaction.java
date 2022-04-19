@@ -13,11 +13,19 @@ public class Transaction {
     private double sum;
     private String date;
 
+    private String categoryId = null;
+
     public Transaction(){}
 
     public Transaction(String userId, double sum){
         this.userId = userId;
         this.sum = sum;
+    }
+
+    public Transaction(String userId, double sum, String categoryId){
+        this.userId = userId;
+        this.sum = sum;
+        this.categoryId = categoryId;
     }
 
     public Transaction(String id, String userId, double sum) {
@@ -72,5 +80,13 @@ public class Transaction {
 
     public String getDate(){
         return date;
+    }
+
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
     }
 }
