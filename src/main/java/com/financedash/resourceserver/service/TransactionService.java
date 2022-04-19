@@ -10,8 +10,11 @@ import java.util.List;
 
 @Service
 public class TransactionService {
-    @Autowired
     private TransactionRepository transactionRepository;
+    public TransactionService(TransactionRepository transactionRepository) {
+        this.transactionRepository = transactionRepository;
+    }
+
 
     public Transaction addTransaction(Transaction transaction){
         return transactionRepository.save(transaction);
