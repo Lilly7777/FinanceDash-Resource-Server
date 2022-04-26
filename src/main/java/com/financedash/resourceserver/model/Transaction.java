@@ -3,6 +3,10 @@ package com.financedash.resourceserver.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Objects;
+
 @Document(collection = "Transaction")
 public class Transaction {
     @Id
@@ -11,7 +15,7 @@ public class Transaction {
     private String description;
     private String userId;
     private double sum;
-    private String date;
+    private String date = ZonedDateTime.now(ZoneId.of("Europe/Sofia")).toInstant().toString();
 
     private String categoryId = null;
 
@@ -88,5 +92,18 @@ public class Transaction {
 
     public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Transaction that = (Transaction) o;
+        return Double.compare(that.sum, sum) == 0 && Objects.equals(id, that.id) && description.equals(that.description) && userId.equals(that.userId) && Objects.equals(date, that.date) && Objects.equals(categoryId, that.categoryId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, description, userId, sum, date, categoryId);
     }
 }

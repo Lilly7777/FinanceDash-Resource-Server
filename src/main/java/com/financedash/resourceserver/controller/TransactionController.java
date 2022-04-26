@@ -1,6 +1,5 @@
 package com.financedash.resourceserver.controller;
 
-import com.azure.core.annotation.HeaderParam;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.financedash.resourceserver.exception.TransactionNotFoundException;
@@ -35,49 +34,53 @@ public class TransactionController {
     private CategoryService categoryService;
 
     @GetMapping("/api/v1/transaction/{id}")
-    public ResponseEntity<Transaction> getTransaction(@PathVariable String id){
-        try{
+    public ResponseEntity<Transaction> getTransaction(@PathVariable String id) {
+        try {
             return new ResponseEntity<>(transactionService.getTransactionById(id), HttpStatus.OK);
-        }catch (TransactionNotFoundException e){
+        } catch (TransactionNotFoundException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
             // {"id":"565","userId":"123","sum":12.0}
         }
     }
 
-    @GetMapping("/api/v1/transaction")
-    public ResponseEntity<List<String>> getAllTransactions(@RequestParam String userId,
-                                                                @RequestParam(value = "output", required = false) String output){
+    @GetMapping(value = "/api/v1/transaction", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAllTransactions(@RequestParam(value = "userId", required = true) String userId,
+                                                     @RequestParam(value = "output", defaultValue = "short") String output) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        List<String> returnList = new LinkedList<>();
+        String returnValue = "";
+        List<Transaction> userTransactions = new LinkedList<>();
+        List<ExtendedTransaction> userExtendedTransactions = new LinkedList<>();
+
         List<Transaction> transactions = transactionService.getAllTransactionByUserId(userId);
-        System.out.println(transactions);
-        boolean isExtended = Objects.nonNull(output) && output.equals("extended");
-            transactions.forEach(transaction -> {
+        boolean isExtended = output.equals("extended");
+        transactions.forEach(transaction -> {
+            if (isExtended) {
                 Category category = categoryService.getCategoryById(transaction.getCategoryId());
-                try {
-                    if(isExtended) {
-                        returnList.add(mapper.writeValueAsString(new ExtendedTransaction(transaction, category)));
-                    }else{
-                        returnList.add(mapper.writeValueAsString(transaction));
-                    }
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-            });
-        return new ResponseEntity<>(returnList, HttpStatus.OK);
+                userExtendedTransactions.add(new ExtendedTransaction(transaction, category));
+            } else {
+                userTransactions.add(transaction);
+            }
+
+        });
+        if (isExtended) {
+            returnValue = mapper.writeValueAsString(userExtendedTransactions);
+        } else {
+            returnValue = mapper.writeValueAsString(userTransactions);
+        }
+        return new ResponseEntity<>(returnValue, HttpStatus.OK);
     }
 
-    @PostMapping(value= "/api/v1/transaction", consumes = MediaType.ALL_VALUE)
-    public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction){
+    @PostMapping(value = "/api/v1/transaction", consumes = MediaType.ALL_VALUE)
+    public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction) {
         return new ResponseEntity<>(transactionService.addTransaction(transaction), HttpStatus.OK);
     }
 
     @DeleteMapping("/api/v1/transaction/{id}")
-    public ResponseEntity<Transaction> deleteTransaction(@PathVariable String id){
-        try{
+    public ResponseEntity<Transaction> deleteTransaction(@PathVariable String id) {
+        try {
             transactionService.deleteTransactionById(id);
             return new ResponseEntity<>(null, HttpStatus.OK);
-        }catch (TransactionNotFoundException e){
+        } catch (TransactionNotFoundException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
