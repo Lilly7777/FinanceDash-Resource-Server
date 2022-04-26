@@ -36,7 +36,7 @@ public class CategoryController {
     }
 
     @GetMapping("/api/v1/categories")
-    public ResponseEntity<List<Category>> getAllCategories(@PathVariable String id) {
+    public ResponseEntity<List<Category>> getAllCategories() {
         return new ResponseEntity<>(categoryService.getAllCategories(), HttpStatus.OK);
     }
 
